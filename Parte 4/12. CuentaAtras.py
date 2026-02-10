@@ -1,60 +1,39 @@
-import requests
+import datetime
+import time
+import os
+import threading
 
 
-def generate_github_report(username: str):
+def cuenta_atrás(fecha_obj):
 
-    base_url = "https://api.github.com"
+    while True:
 
-    user_url = f"{base_url}/users/{username}"
-    user_data = requests.get(user_url).json()
+        fecha_ahora_utc = datetime.datetime.now(datetime.timezone.utc)
 
-    if "status" in user_data and user_data["status"] == "404":
-        print(f"Usuario {username} no encontrado.")
-        return
+        tiempo_restante = fecha_obj - fecha_ahora_utc
 
-    report = {
-        "Nombre": user_data.get("name", "Desconocido"),
-        "Compañía": user_data.get("company", "Desconocida"),
-        "Repositorios públicos": user_data.get("public_repos", 0),
-        "Gists": user_data.get("public_gists", 0),
-        "Seguidores": user_data.get("followers", 0),
-        "Seguidos": user_data.get("following", 0)
-    }
+        if tiempo_restante.total_seconds() <= 0:
+            print("\n¡Cuenta atrás finalizada!")
+            break
 
-    print(f"Informe para el usuario: {username}.")
-    for key, value in report.items():
-        print(f"{key}: {value}")
+        days, seconds = divmod(tiempo_restante.total_seconds(), 86400)
+        hours, seconds = divmod(seconds, 3600)
+        minutes, seconds = divmod(seconds, 60)
 
-    repos_url = user_data["repos_url"]
-    repos_data = requests.get(repos_url).json()
+        os.system("clear")
 
-    languages = {}
+        print(
+            f"Tiempo restante: {int(days)} días, {int(hours)} horas, {int(minutes)} minutos, {int(seconds)} segundos")
 
-    for repo in repos_data:
-
-        language = repo.get("language")
-        if language:
-            if language in languages:
-                languages[language] += 1
-            else:
-                languages[language] = 1
-
-        print(f"\nRepo: {repo.get("full_name")}")
-        print(f"Stars: {repo.get("stargazers_count", 0)}")
-        print(f"Forks: {repo.get("forks_count", 0)}")
-
-    most_used_language = None
-    max_count = 0
-    for language_name, language_count in languages.items():
-        if language_count > max_count:
-            most_used_language = language_name
-            max_count = language_count
-
-    print(
-        f"\nLenguaje más usado: {
-            most_used_language if most_used_language else "Desconocido"}"
-    )
+        time.sleep(1)
 
 
-username = input("Introduce el nombre de usuario de GitHub: ")
-generate_github_report(username)
+fecha_local = datetime.datetime(2026, 7, 26, 12, 12, 12)
+fecha_local = fecha_local.replace(
+    tzinfo=datetime.datetime.now().astimezone().tzinfo)
+
+fecha_obj_utc = fecha_local.astimezone(datetime.timezone.utc)
+
+hilo_cuenta_regresiva = threading.Thread(target=cuenta_atrás, args=(fecha_obj_utc,))
+hilo_cuenta_regresiva.start()
+hilo_cuenta_regresiva.join()
