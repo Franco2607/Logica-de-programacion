@@ -36,4 +36,8 @@ fecha_obj_utc = fecha_local.astimezone(datetime.timezone.utc)
 
 hilo_cuenta_regresiva = threading.Thread(target=cuenta_atrás, args=(fecha_obj_utc,))
 hilo_cuenta_regresiva.start()
+
 hilo_cuenta_regresiva.join()
+
+hilo_cuenta_regresiva.join()
+
